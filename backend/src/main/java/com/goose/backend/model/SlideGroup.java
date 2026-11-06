@@ -12,7 +12,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Data
 @Entity
 @Table(name = "slide_groups")
-public class Slide_Group {
+public class SlideGroup {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

@@ -27,5 +27,5 @@ public class Slide {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "group_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Slide_Group group;
+    private SlideGroup group;
 }
