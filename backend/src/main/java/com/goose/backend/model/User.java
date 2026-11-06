@@ -1,5 +1,6 @@
 package com.goose.backend.model;
 
+import com.goose.backend.role.Roles;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,8 @@ import lombok.NoArgsConstructor;
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
+    private Roles role;
 
     @Column(nullable = false)
     String username;
