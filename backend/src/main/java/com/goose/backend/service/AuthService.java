@@ -18,7 +18,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    private AuthResponse login(String username, String password) {
+    public AuthResponse login(String username, String password) {
         User user = (User) userRepository.findByUsername(username).orElseThrow();
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
@@ -32,7 +32,7 @@ public class AuthService {
         );
     }
 
-    private AuthResponse register(String username, String email, String password) {
+    public AuthResponse register(String username, String email, String password) {
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already in use");
         }
