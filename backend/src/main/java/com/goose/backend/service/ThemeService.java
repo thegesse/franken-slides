@@ -5,9 +5,12 @@ import com.goose.backend.model.Theme;
 import com.goose.backend.model.User;
 import com.goose.backend.repository.ThemeRepository;
 import com.goose.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.nio.file.AccessDeniedException;
 
 @Service
 public class ThemeService {
@@ -26,12 +29,13 @@ public class ThemeService {
                 theme.getOwner().getId()
         );
     }
-    private boolean isExistAndIsOwned(Long ownerId, Long themeId) {
-        Theme theme = themeRepository.findById(themeId).orElse(return false);
+    private Theme getOwnedTheme(Long ownerId, Long themeId) throws AccessDeniedException {
+        Theme theme = themeRepository.findById(themeId)
+                .orElseThrow(() -> new EntityNotFoundException("Theme not found"));
         if(!theme.getOwner().getId().equals(ownerId)) {
-            return false;
+            throw new AccessDeniedException("You do not own this theme");
         }
-        return true;
+        return theme;
     }
 
     public Page<ThemeResponse> findAllThemesForUser(Long userId, Pageable pageable) {
@@ -40,11 +44,8 @@ public class ThemeService {
     }
     //TODO find theme by id, find theme by name, remember to have ownership checks for all those
 
-    public ThemeResponse findThemeByIdForUser(Long ownerId, Long themeId) {
-        Theme theme = themeRepository.findById(themeId).orElseThrow();
-        if(!theme.getOwner().getId().equals(ownerId)) {
-            throw new RuntimeException("You cant access this theme");
-        }
+    public ThemeResponse findThemeByIdForUser(Long ownerId, Long themeId) throws AccessDeniedException {
+        Theme theme = getOwnedTheme(ownerId, themeId);
         return mapToThemeResponse(theme);
     }
 
@@ -59,7 +60,7 @@ public class ThemeService {
         return mapToThemeResponse(savedTheme);
     }
 
-    public ThemeResponse updateThemeForUser(Long ownerId, Long themeId, String newName) {
-
+    public ThemeResponse updateThemeForUser(Long ownerId, Long themeId, String newName) throws AccessDeniedException {
+        Theme theme = getOwnedTheme(ownerId, themeId);
     }
 }
