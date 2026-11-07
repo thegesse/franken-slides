@@ -36,8 +36,8 @@ Scope: backend service classes only. The frontend assembles selected slide group
 ## AuthService
 
 - [x] Expose registration and login through public service methods so application entry points can call them.
-- [ ] Return a clear authentication error when a username is not found or a password does not match.
-- [ ] Reject duplicate email addresses with a specific exception rather than a generic `RuntimeException`.
+- [X] Return a clear authentication error when a username is not found or a password does not match.
+- [X] Reject duplicate email addresses with a specific exception rather than a generic `RuntimeException`.
 - [x] Keep password hashing in the service and never include passwords or password hashes in response DTOs.
 
 ## Shared service concerns
