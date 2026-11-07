@@ -81,5 +81,26 @@ public class SlideGroupService {
         return toDto(savedGroup);
     }
 
-    
+    //TODO update -> change name, change theme
+
+    public SlideGroupResponse changeSlideGroupName(Long ownerId, Long themeId, Long groupId, String newName) {
+        SlideGroup group = getOwnedGroup(ownerId, themeId, groupId);
+
+        group.setName(newName);
+        SlideGroup savedGroup = slideGroupRepository.save(group);
+        return toDto(savedGroup);
+    }
+    public SlideGroupResponse changeSlideGroupTheme(Long ownerId, Long currentThemeId, Long groupId, Long targetThemeId) {
+        SlideGroup group = getOwnedGroup(ownerId, currentThemeId, groupId);
+
+        Theme targetTheme = themeRepository.findById(targetThemeId).orElseThrow(() -> new EntityNotFoundException("Target theme not found"));
+        if(!Objects.equals(targetTheme.getOwner().getId(), ownerId)) {
+            throw new AccessDeniedException("You do not own the target theme");
+        }
+
+        group.setTheme(targetTheme);
+        SlideGroup savedGroup = slideGroupRepository.save(group);
+        return toDto(savedGroup);
+    }
+
 }
