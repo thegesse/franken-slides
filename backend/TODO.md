@@ -14,10 +14,11 @@ Scope: backend service classes only. The frontend assembles selected slide group
 
 ## SlideGroup service
 
-- [ ] Add a service for creating, listing, retrieving, renaming, and deleting slide groups.
-- [ ] Verify that the parent theme exists and belongs to the requesting user before creating or modifying a group.
-- [ ] Return groups in a stable order suitable for the frontend to display and select.
-- [ ] Map groups to DTOs rather than returning entities with lazy-loaded relationships.
+- [x] Implement creating, listing, retrieving, renaming, moving between themes, and deleting slide groups.
+- [X] Register `SlideGroupService` as a Spring bean with `@Service`.
+- [x] Verify that the parent theme exists and belongs to the requesting user before creating or modifying a group.
+- [X] Return groups in a stable order suitable for the frontend to display and select.
+- [x] Map groups to DTOs rather than returning entities with lazy-loaded relationships.
 
 ## Slide service
 

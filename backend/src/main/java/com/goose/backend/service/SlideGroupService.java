@@ -13,9 +13,11 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+@Service
 public class SlideGroupService {
     private final ThemeRepository themeRepository;
     private final SlideGroupRepository slideGroupRepository;
@@ -59,7 +61,7 @@ public class SlideGroupService {
             throw new AccessDeniedException("You cant acces this theme");
         }
 
-        return slideGroupRepository.findByTheme_Id(themeId, pageable)
+        return slideGroupRepository.findByTheme_IdOrderByIdAsc(themeId, pageable)
                 .map(this::toDto);
     }
 
