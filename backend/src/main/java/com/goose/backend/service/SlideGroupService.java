@@ -103,4 +103,9 @@ public class SlideGroupService {
         return toDto(savedGroup);
     }
 
+    public void deleteGroup(Long ownerId, Long themeId, Long groupId) {
+        SlideGroup group = getOwnedGroup(ownerId, themeId, groupId);
+        slideGroupRepository.delete(group);
+    }
+
 }
