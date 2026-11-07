@@ -62,5 +62,15 @@ public class ThemeService {
 
     public ThemeResponse updateThemeForUser(Long ownerId, Long themeId, String newName) throws AccessDeniedException {
         Theme theme = getOwnedTheme(ownerId, themeId);
+        theme.setName(newName);
+
+        Theme savedTheme = themeRepository.save(theme);
+        return mapToThemeResponse(savedTheme);
     }
+
+    public void deleteThemeForUser(Long ownerId, Long themeId) throws AccessDeniedException {
+        Theme theme = getOwnedTheme(ownerId, themeId);
+        themeRepository.deleteById(themeId);
+    }
+
 }

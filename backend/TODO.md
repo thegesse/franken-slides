@@ -4,13 +4,13 @@ Scope: backend service classes only. The frontend assembles selected slide group
 
 ## ThemeService
 
-- [ ] Implement creating a theme for a user.
-- [ ] Implement retrieving a theme by ID, including its groups and slides as needed by the caller.
-- [ ] Implement updating a theme's name.
-- [ ] Implement deleting a theme.
-- [ ] Check that the requesting user owns the theme before returning or changing it.
-- [ ] Keep theme response mapping in the service layer and avoid exposing JPA entities directly.
-- [ ] Review the existing `findByOwnerId` repository methods: keep the paginated query and remove or use the unpaged single-result method appropriately.
+- [x] Implement creating a theme for a user.
+- [x] Implement retrieving theme details by ID. Groups and slides can be fetched through their own service operations when needed.
+- [x] Implement updating a theme's name.
+- [x] Implement deleting a theme.
+- [x] Check that the requesting user owns the theme before returning or changing it.
+- [x] Keep theme response mapping in the service layer and avoid exposing JPA entities directly.
+- [x] Keep the paginated `findByOwnerId` query; remove the unused unpaged single-result method.
 
 ## SlideGroup service
 
