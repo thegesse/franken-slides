@@ -27,6 +27,7 @@ public class SlideGroupService {
         this.userRepository = userRepository;
     }
 
+    //helpers
     private SlideGroupResponse toDto(SlideGroup slideGroup) {
         return new SlideGroupResponse(
                 slideGroup.getId(),
@@ -62,5 +63,23 @@ public class SlideGroupService {
                 .map(this::toDto);
     }
 
+    public SlideGroupResponse getSlideGroupForUserById(Long ownerId, Long themeId, Long groupId) throws AccessDeniedException {
+        SlideGroup slideGroup = getOwnedGroup(ownerId, themeId, groupId);
+        return toDto(slideGroup);
+    }
 
+    public SlideGroupResponse createSlideGroup(Long ownerId, Long themeId, String name) {
+        Theme theme = themeRepository.findById(themeId).orElseThrow(() -> new EntityNotFoundException("Theme not found"));
+        if (!Objects.equals(theme.getOwner().getId(), ownerId)) {
+            throw new AccessDeniedException("You do not own this theme");
+        }
+        SlideGroup group = new SlideGroup();
+        group.setName(name);
+        group.setTheme(theme);
+
+        SlideGroup savedGroup = slideGroupRepository.save(group);
+        return toDto(savedGroup);
+    }
+
+    
 }
