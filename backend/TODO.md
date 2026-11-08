@@ -46,7 +46,7 @@ Scope: backend service and controller work. The frontend assembles selected slid
 - [X] Add `@Transactional` only to service operations that need multiple database changes to succeed or fail atomically.
 - [x] Keep authorization and ownership checks in service operations so every caller gets the same protection.
 - [x] Define response DTOs so services do not return JPA entities directly.
-- [ ] Define request DTOs and consistent validation rules for service inputs.
+- [ ] Define consistent validation rules for service inputs.
 - [X] Remove or update TODO comments in services as the corresponding work is completed.
 
 ## Controller layer
@@ -55,7 +55,7 @@ The backend currently has no REST controllers. Controllers should delegate busin
 
 ### Request DTOs and identity
 
-- [ ] Create request DTOs for theme, slide-group, and slide create/update operations.
+- [x] Create request DTOs for theme, slide-group, and slide create/update operations.
 - [ ] Validate requests consistently (for example, use `@Valid` and field constraints); validate the agreed structured slide-content shape.
 - [ ] Return the existing response DTOs; never expose JPA entities or password fields.
 - [ ] Obtain the acting user's ID and role from the authenticated Cognito identity or trusted API Gateway context. Never accept `ownerId` or `actorId` from request bodies or query parameters.
