@@ -83,8 +83,6 @@ public class SlideGroupService {
         return toDto(savedGroup);
     }
 
-    //TODO update -> change name, change theme
-
     public SlideGroupResponse changeSlideGroupName(Long ownerId, Long themeId, Long groupId, String newName) {
         SlideGroup group = getOwnedGroup(ownerId, themeId, groupId);
 

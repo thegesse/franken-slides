@@ -42,7 +42,6 @@ public class ThemeService {
         return themeRepository.findByOwnerId(userId, pageable)
                 .map(this::mapToThemeResponse);
     }
-    //TODO find theme by id, find theme by name, remember to have ownership checks for all those
 
     public ThemeResponse findThemeByIdForUser(Long ownerId, Long themeId) throws AccessDeniedException {
         Theme theme = getOwnedTheme(ownerId, themeId);
