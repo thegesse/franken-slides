@@ -1,10 +1,12 @@
 package com.goose.backend.dto;
 
+import tools.jackson.databind.JsonNode;
+
 public record SlideResponse(
         Long id,
         String title,
         String description,
-        String content,
+        JsonNode content,
         Long groupId
 ) {
 }
