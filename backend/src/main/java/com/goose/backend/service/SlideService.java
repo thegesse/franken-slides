@@ -113,4 +113,32 @@ public class SlideService {
 
     //TODO modify, title, description, and content
 
+    public SlideResponse changeSlideTitle(Long ownerId, Long groupId, Long slideId, String newName) {
+        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
+        slide.setTitle(newName);
+        Slide savedSlide = slideRepository.save(slide);
+
+        return toDto(savedSlide);
+    }
+    public SlideResponse changeSlideDescription(Long ownerId, Long groupId, Long slideId, String newDesc) {
+        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
+        slide.setDescription(newDesc);
+        Slide savedSlide = slideRepository.save(slide);
+
+        return toDto(savedSlide);
+    }
+
+    public SlideResponse changeSlideContent(Long ownerId, Long groupId, Long slideId, JsonNode newContent) {
+        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
+        slide.setContent(serializeContent(newContent));
+        Slide savedSlide = slideRepository.save(slide);
+
+        return toDto(savedSlide);
+    }
+
+    public void deleteSlide(Long ownerId, Long groupId, Long slideId) {
+        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
+        slideRepository.deleteById(slideId);
+    }
+
 }
