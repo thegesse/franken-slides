@@ -39,8 +39,15 @@ public class SlideService {
         );
     }
 
+    private String defaultIfBlank(String value) {
+        return value == null || value.isBlank() ? "empty" : value;
+    }
+
     private String serializeContent(JsonNode content) {
-        if (content == null || !content.isObject()) {
+        if (content == null || content.isNull() || (content.isObject() && content.isEmpty())) {
+            content = jsonMapper.createObjectNode().put("text", "empty");
+        }
+        if (!content.isObject()) {
             throw new IllegalArgumentException("Slide content must be a JSON object");
         }
         try {
@@ -80,18 +87,14 @@ public class SlideService {
     public SlideResponse createSlide(Long ownerId, Long groupId, String title, String desc, JsonNode content) {
         SlideGroup group = slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
-        if(title == null || title.isBlank()) {
-            throw new IllegalArgumentException("Slide title is required");
-        }
         Slide slide = new Slide();
-        slide.setTitle(title);
-        slide.setDescription(desc);
+        slide.setTitle(defaultIfBlank(title));
+        slide.setDescription(defaultIfBlank(desc));
         slide.setContent(serializeContent(content));
         slide.setGroup(group);
 
         return toDto(slideRepository.save(slide));
     }
-    //TODO get slide by id and title, also implement ownership test
     public Page<SlideResponse> getSlidesForGroup(Long ownerId, Long groupId, Pageable pageable){
         slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
@@ -111,18 +114,16 @@ public class SlideService {
                 .map(this::toDto);
     }
 
-    //TODO modify, title, description, and content
-
     public SlideResponse changeSlideTitle(Long ownerId, Long groupId, Long slideId, String newName) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-        slide.setTitle(newName);
+        slide.setTitle(defaultIfBlank(newName));
         Slide savedSlide = slideRepository.save(slide);
 
         return toDto(savedSlide);
     }
     public SlideResponse changeSlideDescription(Long ownerId, Long groupId, Long slideId, String newDesc) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-        slide.setDescription(newDesc);
+        slide.setDescription(defaultIfBlank(newDesc));
         Slide savedSlide = slideRepository.save(slide);
 
         return toDto(savedSlide);

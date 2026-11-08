@@ -22,11 +22,11 @@ Scope: backend service classes only. The frontend assembles selected slide group
 
 ## Slide service
 
-- [ ] Add a service for creating, listing, retrieving, updating, and deleting slides.
-- [ ] Verify that the parent group exists and its theme belongs to the requesting user before any operation.
-- [ ] Return slides in their intended playback order.
-- [ ] Validate required slide fields and reject invalid or empty content.
-- [ ] Map slides to DTOs rather than returning JPA entities.
+- [x] Add a service for creating, listing, retrieving, updating, and deleting slides.
+- [x] Verify that the parent group exists and its theme belongs to the requesting user before any operation.
+- [x] Return slides in stable creation order (ID ascending) for playback.
+- [x] Default blank title and description values to `empty`; replace missing or empty-object content with `{ "text": "empty" }` and reject non-object content.
+- [x] Map slides to DTOs rather than returning JPA entities.
 
 ## UserService
 
