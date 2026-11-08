@@ -3,11 +3,15 @@ package com.goose.backend.service;
 import com.goose.backend.dto.SlideResponse;
 import com.goose.backend.model.Slide;
 import com.goose.backend.model.SlideGroup;
+import com.goose.backend.model.Theme;
 import com.goose.backend.repository.SlideGroupRepository;
 import com.goose.backend.repository.SlideRepository;
 import com.goose.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 public class SlideService {
@@ -31,7 +35,21 @@ public class SlideService {
                 slide.getGroup().getId()
         );
     }
+    private Slide getOwnedSlide(Long ownerId, Long groupId, Long slideId) {
+        SlideGroup slideGroup = slideGroupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+        if(!Objects.equals(slideGroup.getTheme().getOwner().getId(), ownerId)) {
+            throw new AccessDeniedException("You do not own this group");
+        }
 
+        Slide slide = slideRepository.findById(slideId)
+                .orElseThrow(() -> new EntityNotFoundException("Slide not found"));
+        if (!Objects.equals(slide.getGroup().getId(), groupId)) {
+            throw new EntityNotFoundException("Slide is not in this group");
+        }
+
+        return slide;
+    }
 
     public SlideResponse createSlide(Long ownerId, Long groupId, String title, String desc, String content) {
         SlideGroup group = slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
@@ -47,4 +65,6 @@ public class SlideService {
 
         return toDto(slideRepository.save(slide));
     }
+    //TODO get slide by id and title, also implement ownership test
+
 }
