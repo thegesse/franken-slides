@@ -1,4 +1,4 @@
-package com.goose.backend.dto.request;
+package com.goose.backend.dto.request.theme;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
