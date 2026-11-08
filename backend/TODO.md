@@ -30,9 +30,9 @@ Scope: backend service classes only. The frontend assembles selected slide group
 
 ## UserService
 
-- [ ] Restrict user lookup and deletion operations to authorized service use cases.
-- [ ] Review `findUserByEmail`: its `Pageable` parameter is unused, so remove it or change the method to return a page if that is the intended behavior.
-- [ ] Use clear, consistent exceptions for missing users and invalid operations.
+- [x] Restrict user lookup and deletion operations to self-service or admin-only use cases.
+- [x] Remove the unused `Pageable` parameter from the email lookup.
+- [x] Use clear exceptions for missing users and unauthorized or invalid operations.
 
 ## AuthService
 

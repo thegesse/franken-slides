@@ -3,12 +3,14 @@ package com.goose.backend.service;
 import com.goose.backend.dto.UserResponse;
 import com.goose.backend.model.User;
 import com.goose.backend.repository.UserRepository;
+import com.goose.backend.role.Roles;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserService {
@@ -26,30 +28,50 @@ public class UserService {
         );
     }
 
-    public Page<UserResponse> findUsers(Pageable pageable) {
+    private User requireUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
+    private void requireAdmin(Long actorId) {
+        User actor = requireUser(actorId);
+        if (actor.getRole() != Roles.ADMIN) {
+            throw new AccessDeniedException("Admin role required");
+        }
+    }
+
+    public UserResponse getCurrentUserProfile(Long actorId) {
+        return mapToUserResponse(requireUser(actorId));
+    }
+
+    public Page<UserResponse> findUsersForAdmin(Long actorId, Pageable pageable) {
+        requireAdmin(actorId);
         return userRepository.findAll(pageable)
                 .map(this::mapToUserResponse);
     }
 
-    public Page<UserResponse> findUserByUsername(String username,  Pageable pageable) {
-        Page<User> users = userRepository.findByUsername(username, pageable);
-        if (users.isEmpty()) {
-            throw new RuntimeException("No users found with this username");
-        }
-        return users.map(this::mapToUserResponse);
+    public Page<UserResponse> findUsersByUsernameForAdmin(Long actorId, String username, Pageable pageable) {
+        requireAdmin(actorId);
+        return userRepository.findByUsername(username, pageable)
+                .map(this::mapToUserResponse);
     }
-    public UserResponse findUserByEmail(String email, Pageable pageable) {
+
+    public UserResponse findUserByEmailForAdmin(Long actorId, String email) {
+        requireAdmin(actorId);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email doesn't exist"));
-
-
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return mapToUserResponse(user);
     }
 
-    public void deleteUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User doesn't exist"));
+    public void deleteOwnAccount(Long actorId) {
+        userRepository.delete(requireUser(actorId));
+    }
 
-        userRepository.delete(user);
+    public void deleteUserAsAdmin(Long actorId, Long targetUserId) {
+        requireAdmin(actorId);
+        if (Objects.equals(actorId, targetUserId)) {
+            throw new IllegalArgumentException("Use deleteOwnAccount to delete your own account");
+        }
+        userRepository.delete(requireUser(targetUserId));
     }
 }
