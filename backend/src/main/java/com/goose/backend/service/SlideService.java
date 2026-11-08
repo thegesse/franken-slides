@@ -3,11 +3,12 @@ package com.goose.backend.service;
 import com.goose.backend.dto.SlideResponse;
 import com.goose.backend.model.Slide;
 import com.goose.backend.model.SlideGroup;
-import com.goose.backend.model.Theme;
 import com.goose.backend.repository.SlideGroupRepository;
 import com.goose.backend.repository.SlideRepository;
 import com.goose.backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -66,5 +67,23 @@ public class SlideService {
         return toDto(slideRepository.save(slide));
     }
     //TODO get slide by id and title, also implement ownership test
+    public Page<SlideResponse> getSlidesForGroup(Long ownerId, Long groupId, Pageable pageable){
+        slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+        return slideRepository
+                .findByGroup_IdOrderByIdAsc(groupId, pageable)
+                .map(this::toDto);
+    }
+
+    public SlideResponse getSlideById(Long ownerId, Long groupId, Long slideId) {
+        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
+
+        return toDto(slide);
+    }
+
+    public Page<SlideResponse> getSlideByTitle(Long ownerId, String title, Pageable pageable) {
+        return slideRepository.findByGroup_Theme_Owner_IdAndTitleIgnoreCaseOrderByIdAsc(ownerId, title, pageable)
+                .map(this::toDto);
+    }
 
 }
