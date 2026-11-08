@@ -1,6 +1,7 @@
 package com.goose.backend.service;
 
 import com.goose.backend.dto.SlideResponse;
+import com.goose.backend.mapper.SlideContentJsonConverter;
 import com.goose.backend.model.Slide;
 import com.goose.backend.model.SlideGroup;
 import com.goose.backend.repository.SlideGroupRepository;
@@ -10,9 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Objects;
 
@@ -20,12 +19,13 @@ import java.util.Objects;
 public class SlideService {
     private final SlideRepository slideRepository;
     private final SlideGroupRepository slideGroupRepository;
-    private final JsonMapper jsonMapper;
+    private final SlideContentJsonConverter contentJsonConverter;
 
-    public SlideService(SlideRepository slideRepository, SlideGroupRepository slideGroupRepository, JsonMapper jsonMapper) {
+    public SlideService(SlideRepository slideRepository, SlideGroupRepository slideGroupRepository,
+                        SlideContentJsonConverter contentJsonConverter) {
         this.slideRepository = slideRepository;
         this.slideGroupRepository = slideGroupRepository;
-        this.jsonMapper = jsonMapper;
+        this.contentJsonConverter = contentJsonConverter;
     }
 
     //helpers
@@ -34,38 +34,13 @@ public class SlideService {
                 slide.getId(),
                 slide.getTitle(),
                 slide.getDescription(),
-                parseContent(slide.getContent()),
+                contentJsonConverter.parse(slide.getContent()),
                 slide.getGroup().getId()
         );
     }
 
     private String defaultIfBlank(String value) {
         return value == null || value.isBlank() ? "empty" : value;
-    }
-
-    private String serializeContent(JsonNode content) {
-        if (content == null || content.isNull() || (content.isObject() && content.isEmpty())) {
-            content = jsonMapper.createObjectNode().put("text", "empty");
-        }
-        if (!content.isObject()) {
-            throw new IllegalArgumentException("Slide content must be a JSON object");
-        }
-        try {
-            return jsonMapper.writeValueAsString(content);
-        } catch (JacksonException exception) {
-            throw new IllegalArgumentException("Slide content could not be serialized", exception);
-        }
-    }
-
-    private JsonNode parseContent(String content) {
-        if (content == null || content.isBlank()) {
-            return null;
-        }
-        try {
-            return jsonMapper.readTree(content);
-        } catch (JacksonException exception) {
-            throw new IllegalStateException("Stored slide content is not valid JSON", exception);
-        }
     }
 
     private Slide getOwnedSlide(Long ownerId, Long groupId, Long slideId) {
@@ -90,7 +65,7 @@ public class SlideService {
         Slide slide = new Slide();
         slide.setTitle(defaultIfBlank(title));
         slide.setDescription(defaultIfBlank(desc));
-        slide.setContent(serializeContent(content));
+        slide.setContent(contentJsonConverter.serialize(content));
         slide.setGroup(group);
 
         return toDto(slideRepository.save(slide));
@@ -131,7 +106,7 @@ public class SlideService {
 
     public SlideResponse changeSlideContent(Long ownerId, Long groupId, Long slideId, JsonNode newContent) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-        slide.setContent(serializeContent(newContent));
+        slide.setContent(contentJsonConverter.serialize(newContent));
         Slide savedSlide = slideRepository.save(slide);
 
         return toDto(savedSlide);
