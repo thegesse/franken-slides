@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -63,10 +64,12 @@ public class UserService {
         return mapToUserResponse(user);
     }
 
+    @Transactional
     public void deleteOwnAccount(Long actorId) {
         userRepository.delete(requireUser(actorId));
     }
 
+    @Transactional
     public void deleteUserAsAdmin(Long actorId, Long targetUserId) {
         requireAdmin(actorId);
         if (Objects.equals(actorId, targetUserId)) {

@@ -43,8 +43,8 @@ Scope: backend service classes only. The frontend assembles selected slide group
 
 ## Shared service concerns
 
-- [ ] Use transactions for service operations that read or update related entities.
+- [X] Add `@Transactional` only to service operations that need multiple database changes to succeed or fail atomically.
 - [x] Keep authorization and ownership checks in service operations so every caller gets the same protection.
 - [x] Define response DTOs so services do not return JPA entities directly.
 - [ ] Define request DTOs and consistent validation rules for service inputs.
-- [ ] Remove or update TODO comments in services as the corresponding work is completed.
+- [X] Remove or update TODO comments in services as the corresponding work is completed.

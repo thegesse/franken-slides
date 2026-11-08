@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 
@@ -48,6 +49,7 @@ public class ThemeService {
         return mapToThemeResponse(theme);
     }
 
+    @Transactional
     public ThemeResponse createThemeForUser(Long ownerId, String name) {
         User owner = userRepository.findById(ownerId).orElseThrow();
 
@@ -59,6 +61,7 @@ public class ThemeService {
         return mapToThemeResponse(savedTheme);
     }
 
+    @Transactional
     public ThemeResponse updateThemeForUser(Long ownerId, Long themeId, String newName) throws AccessDeniedException {
         Theme theme = getOwnedTheme(ownerId, themeId);
         theme.setName(newName);
@@ -67,6 +70,7 @@ public class ThemeService {
         return mapToThemeResponse(savedTheme);
     }
 
+    @Transactional
     public void deleteThemeForUser(Long ownerId, Long themeId) throws AccessDeniedException {
         Theme theme = getOwnedTheme(ownerId, themeId);
         themeRepository.deleteById(themeId);

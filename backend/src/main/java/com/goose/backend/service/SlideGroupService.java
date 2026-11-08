@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -70,6 +71,7 @@ public class SlideGroupService {
         return toDto(slideGroup);
     }
 
+    @Transactional
     public SlideGroupResponse createSlideGroup(Long ownerId, Long themeId, String name) {
         Theme theme = themeRepository.findById(themeId).orElseThrow(() -> new EntityNotFoundException("Theme not found"));
         if (!Objects.equals(theme.getOwner().getId(), ownerId)) {
@@ -83,6 +85,7 @@ public class SlideGroupService {
         return toDto(savedGroup);
     }
 
+    @Transactional
     public SlideGroupResponse changeSlideGroupName(Long ownerId, Long themeId, Long groupId, String newName) {
         SlideGroup group = getOwnedGroup(ownerId, themeId, groupId);
 
@@ -90,6 +93,8 @@ public class SlideGroupService {
         SlideGroup savedGroup = slideGroupRepository.save(group);
         return toDto(savedGroup);
     }
+
+    @Transactional
     public SlideGroupResponse changeSlideGroupTheme(Long ownerId, Long currentThemeId, Long groupId, Long targetThemeId) {
         SlideGroup group = getOwnedGroup(ownerId, currentThemeId, groupId);
 
@@ -103,6 +108,7 @@ public class SlideGroupService {
         return toDto(savedGroup);
     }
 
+    @Transactional
     public void deleteGroup(Long ownerId, Long themeId, Long groupId) {
         SlideGroup group = getOwnedGroup(ownerId, themeId, groupId);
         slideGroupRepository.delete(group);

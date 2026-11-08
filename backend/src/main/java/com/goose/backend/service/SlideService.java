@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Objects;
@@ -59,6 +60,7 @@ public class SlideService {
         return slide;
     }
 
+    @Transactional
     public SlideResponse createSlide(Long ownerId, Long groupId, String title, String desc, JsonNode content) {
         SlideGroup group = slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
@@ -89,6 +91,7 @@ public class SlideService {
                 .map(this::toDto);
     }
 
+    @Transactional
     public SlideResponse changeSlideTitle(Long ownerId, Long groupId, Long slideId, String newName) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
         slide.setTitle(defaultIfBlank(newName));
@@ -96,6 +99,8 @@ public class SlideService {
 
         return toDto(savedSlide);
     }
+
+    @Transactional
     public SlideResponse changeSlideDescription(Long ownerId, Long groupId, Long slideId, String newDesc) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
         slide.setDescription(defaultIfBlank(newDesc));
@@ -104,6 +109,7 @@ public class SlideService {
         return toDto(savedSlide);
     }
 
+    @Transactional
     public SlideResponse changeSlideContent(Long ownerId, Long groupId, Long slideId, JsonNode newContent) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
         slide.setContent(contentJsonConverter.serialize(newContent));
@@ -112,6 +118,7 @@ public class SlideService {
         return toDto(savedSlide);
     }
 
+    @Transactional
     public void deleteSlide(Long ownerId, Long groupId, Long slideId) {
         Slide slide = getOwnedSlide(ownerId, groupId, slideId);
         slideRepository.deleteById(slideId);
