@@ -1,6 +1,6 @@
-# Service layer TODO
+# Backend TODO
 
-Scope: backend service classes only. The frontend assembles selected slide groups into a temporary presentation for playback; do not persist a `Presentation` entity as part of this work.
+Scope: backend service and controller work. The frontend assembles selected slide groups into a temporary presentation for playback; do not persist a `Presentation` entity as part of this work.
 
 ## ThemeService
 
@@ -48,3 +48,35 @@ Scope: backend service classes only. The frontend assembles selected slide group
 - [x] Define response DTOs so services do not return JPA entities directly.
 - [ ] Define request DTOs and consistent validation rules for service inputs.
 - [X] Remove or update TODO comments in services as the corresponding work is completed.
+
+## Controller layer
+
+The backend currently has no REST controllers. Controllers should delegate business rules to the existing services and return response DTOs. Cognito is planned to handle sign-in and sign-up, so backend login/register endpoints are not included here.
+
+### Request DTOs and identity
+
+- [ ] Create request DTOs for theme, slide-group, and slide create/update operations.
+- [ ] Validate requests consistently (for example, use `@Valid` and field constraints); validate the agreed structured slide-content shape.
+- [ ] Return the existing response DTOs; never expose JPA entities or password fields.
+- [ ] Obtain the acting user's ID and role from the authenticated Cognito identity or trusted API Gateway context. Never accept `ownerId` or `actorId` from request bodies or query parameters.
+
+### Theme API
+
+- [ ] Add endpoints to list the current user's themes, create a theme, get one by ID, rename it, and delete it.
+- [ ] Return `201 Created` for creation and `204 No Content` for successful deletion; use appropriate statuses for other operations.
+
+### Slide-group API
+
+- [ ] Add endpoints to list groups in a theme, create a group, get one by ID, rename it, move it to another owned theme, and delete it.
+- [ ] For group moves, accept a target theme ID and delegate ownership checks to `SlideGroupService`.
+
+### Slide API
+
+- [ ] Add endpoints to list a group's slides in stable order, create a slide, get one by ID, search by title, update slide fields/content, and delete a slide.
+- [ ] Accept structured slide content as a JSON object and return it as a JSON object.
+
+### API errors and cross-origin access
+
+- [ ] Add consistent error responses for invalid requests, missing resources, access-denied errors, and conflicts.
+- [ ] Ensure Spring Security or API Gateway protects controller routes and rejects unauthorized requests.
+- [ ] Configure CORS for the deployed frontend origin if it differs from the API origin.
