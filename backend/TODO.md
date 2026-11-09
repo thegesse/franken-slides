@@ -57,7 +57,7 @@ The backend currently has no REST controllers. Controllers should delegate busin
 
 - [x] Create request DTOs for theme, slide-group, and slide create/update operations.
 - [ ] Validate requests consistently (for example, use `@Valid` and field constraints); validate the agreed structured slide-content shape.
-- [ ] Return the existing response DTOs; never expose JPA entities or password fields.
+- [X] Return the existing response DTOs; never expose JPA entities or password fields.
 - [ ] Obtain the acting user's ID and role from the authenticated Cognito identity or trusted API Gateway context. Never accept `ownerId` or `actorId` from request bodies or query parameters.
 
 ### Theme API
