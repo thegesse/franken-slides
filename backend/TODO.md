@@ -51,14 +51,14 @@ Scope: backend service and controller work. The frontend assembles selected slid
 
 ## Controller layer
 
-The backend currently has no REST controllers. Controllers should delegate business rules to the existing services and return response DTOs. Cognito is planned to handle sign-in and sign-up, so backend login/register endpoints are not included here.
+The backend has theme and slide-group REST controllers. Controllers should delegate business rules to services and return response DTOs. Authentication is not configured yet, so the current routes include `userId`; replace it with the authenticated user's identity before exposing the API.
 
 ### Request DTOs and identity
 
 - [x] Create request DTOs for theme, slide-group, and slide create/update operations.
 - [ ] Validate requests consistently (for example, use `@Valid` and field constraints); validate the agreed structured slide-content shape.
 - [X] Return the existing response DTOs; never expose JPA entities or password fields.
-- [ ] Obtain the acting user's ID and role from the authenticated Cognito identity or trusted API Gateway context. Never accept `ownerId` or `actorId` from request bodies or query parameters.
+- [ ] Replace `userId` path variables with the authenticated actor ID once authentication is configured; never accept `ownerId` or `actorId` from request bodies or query parameters.
 
 ### Theme API
 
@@ -67,8 +67,8 @@ The backend currently has no REST controllers. Controllers should delegate busin
 
 ### Slide-group API
 
-- [ ] Add endpoints to list groups in a theme, create a group, get one by ID, rename it, move it to another owned theme, and delete it.
-- [ ] For group moves, accept a target theme ID and delegate ownership checks to `SlideGroupService`.
+- [x] Add endpoints to list groups in a theme, create a group, get one by ID, rename it, move it to another owned theme, and delete it.
+- [x] For group moves, accept a target theme ID and delegate ownership checks to `SlideGroupService`.
 
 ### Slide API
 

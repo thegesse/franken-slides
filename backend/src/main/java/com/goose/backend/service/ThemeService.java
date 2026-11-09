@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 
 @Service
 public class ThemeService {
@@ -30,7 +30,7 @@ public class ThemeService {
                 theme.getOwner().getId()
         );
     }
-    private Theme getOwnedTheme(Long ownerId, Long themeId) throws AccessDeniedException {
+    private Theme getOwnedTheme(Long ownerId, Long themeId) {
         Theme theme = themeRepository.findById(themeId)
                 .orElseThrow(() -> new EntityNotFoundException("Theme not found"));
         if(!theme.getOwner().getId().equals(ownerId)) {
@@ -44,7 +44,7 @@ public class ThemeService {
                 .map(this::mapToThemeResponse);
     }
 
-    public ThemeResponse findThemeByIdForUser(Long ownerId, Long themeId) throws AccessDeniedException {
+    public ThemeResponse findThemeByIdForUser(Long ownerId, Long themeId) {
         Theme theme = getOwnedTheme(ownerId, themeId);
         return mapToThemeResponse(theme);
     }
@@ -62,7 +62,7 @@ public class ThemeService {
     }
 
     @Transactional
-    public ThemeResponse updateThemeForUser(Long ownerId, Long themeId, String newName) throws AccessDeniedException {
+    public ThemeResponse updateThemeForUser(Long ownerId, Long themeId, String newName) {
         Theme theme = getOwnedTheme(ownerId, themeId);
         theme.setName(newName);
 
@@ -71,7 +71,7 @@ public class ThemeService {
     }
 
     @Transactional
-    public void deleteThemeForUser(Long ownerId, Long themeId) throws AccessDeniedException {
+    public void deleteThemeForUser(Long ownerId, Long themeId) {
         Theme theme = getOwnedTheme(ownerId, themeId);
         themeRepository.deleteById(themeId);
     }
