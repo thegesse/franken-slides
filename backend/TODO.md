@@ -62,8 +62,8 @@ The backend currently has no REST controllers. Controllers should delegate busin
 
 ### Theme API
 
-- [ ] Add endpoints to list the current user's themes, create a theme, get one by ID, rename it, and delete it.
-- [ ] Return `201 Created` for creation and `204 No Content` for successful deletion; use appropriate statuses for other operations.
+- [X] Add endpoints to list the current user's themes, create a theme, get one by ID, rename it, and delete it.
+- [X] Return `201 Created` for creation and `204 No Content` for successful deletion; use appropriate statuses for other operations.
 
 ### Slide-group API
 
