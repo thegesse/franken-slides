@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface SlideGroupRepository extends JpaRepository<SlideGroup,Long> {
     Page<SlideGroup> findByTheme_IdOrderByIdAsc(Long themeId, Pageable pageable);
     Optional<SlideGroup> findByIdAndTheme_Owner_Id(Long groupId, Long ownerId);
+    Optional<SlideGroup> findByIdAndTheme_IdAndTheme_Owner_Id(Long groupId, Long themeId, Long ownerId);
 }

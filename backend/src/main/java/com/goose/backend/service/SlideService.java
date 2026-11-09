@@ -9,7 +9,6 @@ import com.goose.backend.repository.SlideRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -29,7 +28,6 @@ public class SlideService {
         this.contentJsonConverter = contentJsonConverter;
     }
 
-    //helpers
     private SlideResponse toDto(Slide slide) {
         return new SlideResponse(
                 slide.getId(),
@@ -44,84 +42,75 @@ public class SlideService {
         return value == null || value.isBlank() ? "empty" : value;
     }
 
-    private Slide getOwnedSlide(Long ownerId, Long groupId, Long slideId) {
-        SlideGroup slideGroup = slideGroupRepository.findById(groupId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
-        if(!Objects.equals(slideGroup.getTheme().getOwner().getId(), ownerId)) {
-            throw new AccessDeniedException("You do not own this group");
-        }
+    private SlideGroup getOwnedGroup(Long ownerId, Long themeId, Long groupId) {
+        return slideGroupRepository.findByIdAndTheme_IdAndTheme_Owner_Id(groupId, themeId, ownerId)
+                .orElseThrow(() -> new EntityNotFoundException("Group not found in this theme"));
+    }
+
+    private Slide getOwnedSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
+        getOwnedGroup(ownerId, themeId, groupId);
 
         Slide slide = slideRepository.findById(slideId)
                 .orElseThrow(() -> new EntityNotFoundException("Slide not found"));
         if (!Objects.equals(slide.getGroup().getId(), groupId)) {
-            throw new EntityNotFoundException("Slide is not in this group");
+            throw new EntityNotFoundException("Slide not found in this group");
         }
-
         return slide;
     }
 
     @Transactional
-    public SlideResponse createSlide(Long ownerId, Long groupId, String title, String desc, JsonNode content) {
-        SlideGroup group = slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+    public SlideResponse createSlide(Long ownerId, Long themeId, Long groupId,
+                                     String title, String description, JsonNode content) {
+        SlideGroup group = getOwnedGroup(ownerId, themeId, groupId);
         Slide slide = new Slide();
         slide.setTitle(defaultIfBlank(title));
-        slide.setDescription(defaultIfBlank(desc));
+        slide.setDescription(defaultIfBlank(description));
         slide.setContent(contentJsonConverter.serialize(content));
         slide.setGroup(group);
-
         return toDto(slideRepository.save(slide));
     }
-    public Page<SlideResponse> getSlidesForGroup(Long ownerId, Long groupId, Pageable pageable){
-        slideGroupRepository.findByIdAndTheme_Owner_Id(groupId, ownerId)
-                .orElseThrow(() -> new EntityNotFoundException("Group not found"));
-        return slideRepository
-                .findByGroup_IdOrderByIdAsc(groupId, pageable)
+
+    public Page<SlideResponse> getSlidesForGroup(Long ownerId, Long themeId, Long groupId, Pageable pageable) {
+        getOwnedGroup(ownerId, themeId, groupId);
+        return slideRepository.findByGroup_IdOrderByIdAsc(groupId, pageable)
                 .map(this::toDto);
     }
 
-    public SlideResponse getSlideById(Long ownerId, Long groupId, Long slideId) {
-        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-
-        return toDto(slide);
-    }
-
-    public Page<SlideResponse> getSlideByTitle(Long ownerId, String title, Pageable pageable) {
-        return slideRepository.findByGroup_Theme_Owner_IdAndTitleIgnoreCaseOrderByIdAsc(ownerId, title, pageable)
+    public Page<SlideResponse> searchSlidesInGroup(Long ownerId, Long themeId, Long groupId,
+                                                   String title, Pageable pageable) {
+        getOwnedGroup(ownerId, themeId, groupId);
+        return slideRepository.findByGroup_IdAndTitleContainingIgnoreCaseOrderByIdAsc(groupId, title, pageable)
                 .map(this::toDto);
     }
 
-    @Transactional
-    public SlideResponse changeSlideTitle(Long ownerId, Long groupId, Long slideId, String newName) {
-        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-        slide.setTitle(defaultIfBlank(newName));
-        Slide savedSlide = slideRepository.save(slide);
-
-        return toDto(savedSlide);
+    public SlideResponse getSlideById(Long ownerId, Long themeId, Long groupId, Long slideId) {
+        return toDto(getOwnedSlide(ownerId, themeId, groupId, slideId));
     }
 
     @Transactional
-    public SlideResponse changeSlideDescription(Long ownerId, Long groupId, Long slideId, String newDesc) {
-        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-        slide.setDescription(defaultIfBlank(newDesc));
-        Slide savedSlide = slideRepository.save(slide);
-
-        return toDto(savedSlide);
+    public SlideResponse changeSlideTitle(Long ownerId, Long themeId, Long groupId, Long slideId, String newTitle) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        slide.setTitle(defaultIfBlank(newTitle));
+        return toDto(slideRepository.save(slide));
     }
 
     @Transactional
-    public SlideResponse changeSlideContent(Long ownerId, Long groupId, Long slideId, JsonNode newContent) {
-        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
+    public SlideResponse changeSlideDescription(Long ownerId, Long themeId, Long groupId, Long slideId, String newDescription) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        slide.setDescription(defaultIfBlank(newDescription));
+        return toDto(slideRepository.save(slide));
+    }
+
+    @Transactional
+    public SlideResponse changeSlideContent(Long ownerId, Long themeId, Long groupId, Long slideId, JsonNode newContent) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
         slide.setContent(contentJsonConverter.serialize(newContent));
-        Slide savedSlide = slideRepository.save(slide);
-
-        return toDto(savedSlide);
+        return toDto(slideRepository.save(slide));
     }
 
     @Transactional
-    public void deleteSlide(Long ownerId, Long groupId, Long slideId) {
-        Slide slide = getOwnedSlide(ownerId, groupId, slideId);
-        slideRepository.deleteById(slideId);
+    public void deleteSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        slideRepository.delete(slide);
     }
-
 }

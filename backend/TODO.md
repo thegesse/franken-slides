@@ -51,7 +51,7 @@ Scope: backend service and controller work. The frontend assembles selected slid
 
 ## Controller layer
 
-The backend has theme and slide-group REST controllers. Controllers should delegate business rules to services and return response DTOs. Authentication is not configured yet, so the current routes include `userId`; replace it with the authenticated user's identity before exposing the API.
+The backend has theme, slide-group, and slide REST controllers. Controllers should delegate business rules to services and return response DTOs. Authentication is not configured yet, so the current routes include `userId`; replace it with the authenticated user's identity before exposing the API.
 
 ### Request DTOs and identity
 
@@ -72,8 +72,8 @@ The backend has theme and slide-group REST controllers. Controllers should deleg
 
 ### Slide API
 
-- [ ] Add endpoints to list a group's slides in stable order, create a slide, get one by ID, search by title, update slide fields/content, and delete a slide.
-- [ ] Accept structured slide content as a JSON object and return it as a JSON object.
+- [x] Add endpoints to list a group's slides in stable order, create a slide, get one by ID, search by title, update slide fields/content, and delete a slide.
+- [x] Accept structured slide content as a JSON object and return it as a JSON object.
 
 ### API errors and cross-origin access
 
