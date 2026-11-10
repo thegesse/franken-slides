@@ -1,73 +1,135 @@
-import { useState, useEffect } from 'react';
-import { API_BASE_URL } from "../../config.js";
-import ThemeList from '../../components/ThemeCard';
+import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../../config.js';
+import ThemeList from '../../components/ThemeList.jsx';
 
 export default function ThemeSection({ userId }) {
     const [themes, setThemes] = useState([]);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [newTitle, setNewTitle] = useState('');
 
-    const themeBaseApi = `${API_BASE_URL}/api/v1/users/${userId}/themes`
+    const themeBaseApi = `${API_BASE_URL}/api/v1/users/${userId}/themes`;
 
-    async function loadThemes() {
+    useEffect(() => {
+        if (userId == null) {
+            setThemes([]);
+            setLoading(false);
+            return;
+        }
+
+        const controller = new AbortController();
+
+        async function loadThemes() {
+            setLoading(true);
+            setError('');
             try {
-                const response = await fetch(`${themeBaseApi}`);
+                const response = await fetch(themeBaseApi, { signal: controller.signal });
                 if (!response.ok) {
                     throw new Error(`Could not load themes (${response.status})`);
                 }
                 const page = await response.json();
                 setThemes(page.content);
-            }catch(e) {
-                setError(e.message);
-            }
-        }
-        async function createTheme(title) {
-            try {
-                const response = await fetch (`${themeBaseApi}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json'},
-                    body: JSON.stringify({ title })
-                });
-                
-                if(!response.ok) {
-                    throw new Error(`Could not create Theme (${response.status})`);
-                }
-            }catch(e) {
-                console.error('Create theme error', e);
-            }
-        }
-        async function updateTheme(themeId, newTitle) {
-            try {
-                const response = await fetch(`${themeBaseApi}/${themeId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-type': 'application/json' },
-                    body: JSON.stringify({themeId, newTitle})
-                });
-                if(!response.ok) {
-                    throw new Error(`Could not modify Theme (${response.status})`);
-                }
-            } catch(e) {
-                console.error('Update theme error', e);
-            }
-        }
-        async function deleteTheme(themeId) {
-            try {
-                const response = await fetch(`${themeBaseApi}/${themeId}`, {
-                    method: 'DELETE'
-                });
-                if(!response.ok) {
-                    throw new Error(`Could not delete Theme (${response.status})`);
-                }
-            }catch(e) {
-                    console.error('Delete theme error', e);
+            } catch (e) {
+                if (e.name !== 'AbortError') setError(e.message);
+            } finally {
+                if (!controller.signal.aborted) setLoading(false);
             }
         }
 
-    useEffect(() => {
         loadThemes();
-    }, [userId]);
+        return () => controller.abort();
+    }, [themeBaseApi, userId]);
 
-    if (error) return <p role="alert">{error}</p>
+    async function createTheme(event) {
+        event.preventDefault();
+        setError('');
+        try {
+            const response = await fetch(themeBaseApi, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Could not create theme (${response.status})`);
+            }
+            const createdTheme = await response.json();
+            setThemes((current) => [...current, createdTheme]);
+            setNewTitle('');
+            setShowCreateForm(false);
+        } catch (e) {
+            setError(e.message);
+        }
+    }
+
+    async function updateTheme(themeId, newTitle) {
+        setError('');
+        try {
+            const response = await fetch(`${themeBaseApi}/${themeId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newTitle })
+            });
+            if (!response.ok) {
+                throw new Error(`Could not modify theme (${response.status})`);
+            }
+            const updatedTheme = await response.json();
+            setThemes((current) => current.map((theme) =>
+                theme.id === themeId ? updatedTheme : theme
+            ));
+            return updatedTheme;
+        } catch (e) {
+            setError(e.message);
+            throw e;
+        }
+    }
+
+    async function deleteTheme(themeId) {
+        setError('');
+        try {
+            const response = await fetch(`${themeBaseApi}/${themeId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new Error(`Could not delete theme (${response.status})`);
+            }
+            setThemes((current) => current.filter((theme) => theme.id !== themeId));
+        } catch (e) {
+            setError(e.message);
+        }
+    }
+
     return (
-        <ThemeList themes={themes} />
-    )
+        <section>
+            {error && <p role="alert">{error}</p>}
+            {loading ? (
+                <p>Loading themes…</p>
+            ) : (
+                <ThemeList
+                    themes={themes}
+                    onDelete={deleteTheme}
+                    onRename={updateTheme}
+                    onAdd={() => setShowCreateForm(true)}
+                />
+            )}
+
+            {showCreateForm && (
+                <form onSubmit={createTheme}>
+                    <label htmlFor="new-theme-title">Theme name</label>
+                    <input
+                        id="new-theme-title"
+                        value={newTitle}
+                        onChange={(event) => setNewTitle(event.target.value)}
+                        maxLength={255}
+                        required
+                    />
+                    <button type="submit">Create theme</button>
+                    <button type="button" onClick={() => setShowCreateForm(false)}>
+                        Cancel
+                    </button>
+                </form>
+            )}
+        </section>
+    );
 }
