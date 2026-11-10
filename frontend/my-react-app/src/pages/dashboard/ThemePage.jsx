@@ -6,10 +6,11 @@ export default function ThemeSection({ userId }) {
     const [themes, setThemes] = useState([]);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        async function loadThemes() {
+    const themeBaseApi = `${API_BASE_URL}/api/v1/users/${userId}/themes`
+
+    async function loadThemes() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/v1/users/${userId}/themes`);
+                const response = await fetch(`${themeBaseApi}`);
                 if (!response.ok) {
                     throw new Error(`Could not load themes (${response.status})`);
                 }
@@ -19,6 +20,23 @@ export default function ThemeSection({ userId }) {
                 setError(e.message);
             }
         }
+        async function createTheme(title) {
+            try {
+                const response = await fetch (`${themeBaseApi}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title })
+                });
+                
+                if(!response.ok) {
+                    throw new Error(`Could not create Theme (${response.status})`);
+                }
+            }catch(e) {
+                console.error('Create Theme error', e);
+            }
+        }
+
+    useEffect(() => {
         loadThemes();
     }, [userId]);
 
