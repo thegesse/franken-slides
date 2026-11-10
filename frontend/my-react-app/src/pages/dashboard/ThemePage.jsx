@@ -32,7 +32,33 @@ export default function ThemeSection({ userId }) {
                     throw new Error(`Could not create Theme (${response.status})`);
                 }
             }catch(e) {
-                console.error('Create Theme error', e);
+                console.error('Create theme error', e);
+            }
+        }
+        async function updateTheme(themeId, newTitle) {
+            try {
+                const response = await fetch(`${themeBaseApi}/${themeId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-type': 'application/json' },
+                    body: JSON.stringify({themeId, newTitle})
+                });
+                if(!response.ok) {
+                    throw new Error(`Could not modify Theme (${response.status})`);
+                }
+            } catch(e) {
+                console.error('Update theme error', e);
+            }
+        }
+        async function deleteTheme(themeId) {
+            try {
+                const response = await fetch(`${themeBaseApi}/${themeId}`, {
+                    method: 'DELETE'
+                });
+                if(!response.ok) {
+                    throw new Error(`Could not delete Theme (${response.status})`);
+                }
+            }catch(e) {
+                    console.error('Delete theme error', e);
             }
         }
 
