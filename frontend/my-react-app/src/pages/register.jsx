@@ -30,7 +30,7 @@ export default function Register() {
             }
         } catch (err) {
             console.error("Network or parsing error:", err);
-            alert("Could not connect to the C server. Is port 8080 running?");
+            alert("Could not connect to the server");
         }
     };
 
