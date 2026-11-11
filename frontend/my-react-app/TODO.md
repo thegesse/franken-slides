@@ -1,23 +1,23 @@
 ## Components
-- [ ] Create a slide component
-- [ ] Create a slide list component
-- [ ] Create a group card comonent
-- [ ] Create a group list component
-- [ ] Create a theme component
-- [ ] Create a theme viewer component
-- [ ] make each component linked and have onclick to open each
+- [x] Create a slide component
+- [x] Create a slide list component
+- [x] Create a group card component
+- [x] Create a group list component
+- [x] Create a theme component
+- [x] Create a theme viewer component
+- [x] Link themes and groups so selecting them opens their contents
 
 ## Pages
-- [ ] Dashboard page
-- [ ] Dashboard opens with theme list
-- [ ] theme list shows group list
-- [ ] Create theme button (by default empty)
-- [ ] Create group empty by default inside a them
-- [ ] Create Slide form
-- [ ] Store sldie Ids from slide group from backend
+- [x] Dashboard page
+- [x] Dashboard opens with theme list
+- [x] Selecting a theme shows its group list
+- [x] Create theme button (new themes start empty)
+- [x] Create a group inside a selected theme
+- [x] Create slide form
+- [x] Load and retain slide IDs from the backend while building the presentation
 
-- [ ] Create presentation page dynamically with the Ids
-- [ ] After presentation show go to dashboard page
+- [x] Create a presentation page dynamically from selected groups and slides
+- [x] Return to dashboard after quitting presentation
 
 
 
