@@ -3,16 +3,17 @@ import Dashboard from './pages/dashboard/Dashboard.jsx';
 import Login from './pages/login.jsx';
 import PresentationPage from './pages/PresentationPage.jsx';
 import Register from './pages/register.jsx';
+import { getAccessToken } from './api.js';
 import './App.css';
 
 function RequireUser({ children }) {
     const userId = localStorage.getItem('user_id');
-    return userId ? children : <Navigate to="/" replace />;
+    return userId && getAccessToken() ? children : <Navigate to="/" replace />;
 }
 
 function HomeRoute() {
     const userId = localStorage.getItem('user_id');
-    return <Navigate to={userId ? '/dashboard' : '/'} replace />;
+    return <Navigate to={userId && getAccessToken() ? '/dashboard' : '/'} replace />;
 }
 
 export default function App() {

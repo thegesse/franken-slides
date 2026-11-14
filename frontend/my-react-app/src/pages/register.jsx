@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from 'react-router-dom';
 import { API_BASE_URL } from "../config";
+import { apiFetch, saveAuthSession } from '../api.js';
 
 export default function Register() {
     const [username, setUsername] = useState("");
@@ -12,25 +13,24 @@ export default function Register() {
         e.preventDefault();
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+            const response = await apiFetch(`${API_BASE_URL}/api/v1/auth/register`, {
+                auth: false,
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password}),
             });
 
-            const text = await response.text();
-            const data = text ? JSON.parse(text) : {};
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                localStorage.setItem('user_id', data.id || data.user_id);
-                localStorage.setItem('username', data.username || username);
+                saveAuthSession(data, username);
                 navigate("/dashboard");
             } else {
-                alert(data.error || "Failed to sign up");
+                alert(data.message || data.error || "Failed to sign up");
             }
         } catch (err) {
             console.error("Network or parsing error:", err);
-            alert("Could not connect to the server");
+            alert(err.message || "Could not connect to the server");
         }
     };
 

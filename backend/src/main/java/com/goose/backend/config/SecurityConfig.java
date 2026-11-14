@@ -38,7 +38,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) //reminder to enable this once frontend handles cookies
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -50,7 +50,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();
     }

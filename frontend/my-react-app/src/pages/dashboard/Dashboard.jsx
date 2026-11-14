@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config.js';
+import { apiFetch, clearAuthSession } from '../../api.js';
 import CreateSlideForm from '../../components/CreateSlideForm.jsx';
 import GroupList from '../../components/GroupList.jsx';
 import SlideList from '../../components/SlideList.jsx';
@@ -13,7 +14,7 @@ async function getAllPages(url, signal) {
 
     while (hasNext) {
         const separator = url.includes('?') ? '&' : '?';
-        const response = await fetch(`${url}${separator}page=${pageNumber}&size=100`, { signal });
+        const response = await apiFetch(`${url}${separator}page=${pageNumber}&size=100`, { signal });
         if (!response.ok) {
             throw new Error(`Request failed (${response.status})`);
         }
@@ -96,7 +97,7 @@ export default function Dashboard() {
         event.preventDefault();
         setError('');
         try {
-            const response = await fetch(
+            const response = await apiFetch(
                 `${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups`,
                 {
                     method: 'POST',
@@ -119,7 +120,7 @@ export default function Dashboard() {
     async function deleteGroup(group) {
         setError('');
         try {
-            const response = await fetch(
+            const response = await apiFetch(
                 `${API_BASE_URL}/api/v1/users/${userId}/themes/${group.themeId}/groups/${group.id}`,
                 { method: 'DELETE' }
             );
@@ -138,7 +139,7 @@ export default function Dashboard() {
 
     async function createSlide(slideInput) {
         setError('');
-        const response = await fetch(
+        const response = await apiFetch(
             `${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups/${selectedGroupId}/slides`,
             {
                 method: 'POST',
@@ -154,7 +155,7 @@ export default function Dashboard() {
     async function deleteSlide(slideId) {
         setError('');
         try {
-            const response = await fetch(
+            const response = await apiFetch(
                 `${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups/${selectedGroupId}/slides/${slideId}`,
                 { method: 'DELETE' }
             );
@@ -224,8 +225,7 @@ export default function Dashboard() {
     }
 
     function logout() {
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('username');
+        clearAuthSession();
         navigate('/');
     }
 

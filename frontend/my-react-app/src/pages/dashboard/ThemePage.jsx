@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../../config.js';
+import { apiFetch } from '../../api.js';
 import ThemeList from '../../components/ThemeList.jsx';
 
 async function getAllThemes(url, signal) {
@@ -8,7 +9,7 @@ async function getAllThemes(url, signal) {
     let hasNext = true;
 
     while (hasNext) {
-        const response = await fetch(`${url}?page=${pageNumber}&size=100`, { signal });
+        const response = await apiFetch(`${url}?page=${pageNumber}&size=100`, { signal });
         if (!response.ok) throw new Error(`Could not load themes (${response.status})`);
         const page = await response.json();
         themes.push(...page.content);
@@ -56,7 +57,7 @@ export default function ThemeSection({ userId, selectedThemeId, onThemeSelect, o
         event.preventDefault();
         setError('');
         try {
-            const response = await fetch(themeBaseApi, {
+            const response = await apiFetch(themeBaseApi, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: newTitle })
@@ -75,7 +76,7 @@ export default function ThemeSection({ userId, selectedThemeId, onThemeSelect, o
     async function updateTheme(themeId, newTitle) {
         setError('');
         try {
-            const response = await fetch(`${themeBaseApi}/${themeId}`, {
+            const response = await apiFetch(`${themeBaseApi}/${themeId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ newTitle })
@@ -93,7 +94,7 @@ export default function ThemeSection({ userId, selectedThemeId, onThemeSelect, o
     async function deleteTheme(themeId) {
         setError('');
         try {
-            const response = await fetch(`${themeBaseApi}/${themeId}`, { method: 'DELETE' });
+            const response = await apiFetch(`${themeBaseApi}/${themeId}`, { method: 'DELETE' });
             if (!response.ok) throw new Error(`Could not delete theme (${response.status})`);
             setThemes((current) => current.filter((theme) => theme.id !== themeId));
             onThemeDeleted(themeId);

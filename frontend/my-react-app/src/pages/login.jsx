@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from "../config.js"
+import { API_BASE_URL } from "../config.js";
+import { apiFetch, saveAuthSession } from '../api.js';
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -11,27 +12,24 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+            const response = await apiFetch(`${API_BASE_URL}/api/v1/auth/login`, {
+                auth: false,
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
 
-            const text = await response.text();
-            const data = text ? JSON.parse(text) : {};
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                //TODO when token validation added, store function here
-                localStorage.setItem('user_id', data.id || data.user_id);
-                localStorage.setItem('username', data.username || username);
-
+                saveAuthSession(data, username);
                 navigate('/dashboard');
             } else {
-                alert(data.error || 'Invalid credentials');
+                alert(data.message || data.error || 'Invalid credentials');
             }
         } catch (err) {
             console.error('Login error:', err);
-            alert('Could not connect to server');
+            alert(err.message || 'Could not connect to server');
         }
     };
 
