@@ -1,0 +1,17 @@
+name: Backend-test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: Ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/set-up@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Run backend tests
+        working-directory: backend
+        run: bash ./mvnw test
