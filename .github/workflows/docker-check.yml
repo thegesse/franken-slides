@@ -8,6 +8,8 @@ jobs:
       POSTGRES_DB: db_ci
       POSTGRES_USER: ci_user
       POSTGRES_PASSWORD: ci_password
+      # Test-only key: 32 bytes before Base64 encoding. Never use in a deployment.
+      JWT_SECRET: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
 
     steps:
       - uses: actions/checkout@v4

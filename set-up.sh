@@ -77,6 +77,18 @@ if [[ ! -f "$ENV_FILE" ]]; then
     exit 1
 fi
 
+# Generate a JWT signing key for new and existing .env files that predate JWT auth.
+if ! grep -q '^JWT_SECRET=[^[:space:]]' "$ENV_FILE"; then
+    if ! command -v openssl >/dev/null 2>&1; then
+        echo "OpenSSL is required to generate the JWT signing key." >&2
+        exit 1
+    fi
+    sed -i '/^JWT_SECRET=/d' "$ENV_FILE"
+    printf '\nJWT_SECRET=%s\n' "$(openssl rand -base64 32)" >> "$ENV_FILE"
+    chmod 600 "$ENV_FILE"
+    echo "Generated a JWT signing key in $ENV_FILE."
+fi
+
 echo "Step 2: building the Spring Boot JAR"
 (
     cd "$SCRIPT_DIR/backend"
