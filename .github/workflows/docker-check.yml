@@ -23,7 +23,7 @@ jobs:
         run: bash ./mvnw clean package -DskipTests
 
       - name: Build Docker images
-        run: docker compose build backend frontent
+        run: docker compose build backend frontend
 
       - name: Start services
         run: docker compose up -d --wait
