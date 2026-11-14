@@ -28,6 +28,11 @@ export function clearAuthSession() {
     sessionStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem('user_id');
     localStorage.removeItem('username');
+
+    // Discard the cached CSRF value on session reset so the next mutation reads
+    // the token currently held by the browser cookie.
+    csrfToken = undefined;
+    csrfRequest = null;
 }
 
 function csrfUrl(requestUrl) {
