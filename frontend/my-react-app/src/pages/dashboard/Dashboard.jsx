@@ -224,9 +224,16 @@ export default function Dashboard() {
         }
     }
 
-    function logout() {
-        clearAuthSession();
-        navigate('/');
+    async function logout() {
+        try {
+            await apiFetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+                auth: false,
+                method: 'POST'
+            });
+        } finally {
+            clearAuthSession();
+            navigate('/');
+        }
     }
 
     return (

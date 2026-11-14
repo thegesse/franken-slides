@@ -7,8 +7,10 @@ import com.goose.backend.repository.UserRepository;
 import com.goose.backend.role.States;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -68,5 +70,55 @@ public class RefreshTokenService {
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
+    }
+
+    @Transactional
+    public RefreshTokenRotation rotateToken(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) {
+            throw invalidRefreshToken();
+        }
+
+        String tokenHash = hashToken(rawToken);
+        RefreshToken token = tokenRepository.findByTokenHashForUpdate(tokenHash)
+                .orElseThrow(this::invalidRefreshToken);
+
+        Instant now = Instant.now();
+        if (token.getTokenState() != States.VALID || !token.getExpiresAt().isAfter(now)) {
+            throw invalidRefreshToken();
+        }
+
+        token.setTokenState(States.ROTATED);
+        String nextRawToken = generateRawToken();
+        User user = userRepository.findById(token.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        RefreshToken newToken = new RefreshToken();
+        newToken.setUser(user);
+        newToken.setCreatedAt(now);
+        newToken.setExpiresAt(now.plus(refreshTokenLifetime));
+        newToken.setTokenState(States.VALID);
+        newToken.setTokenHash(hashToken(nextRawToken));
+
+        tokenRepository.save(token);
+        tokenRepository.save(newToken);
+        return new RefreshTokenRotation(user, nextRawToken);
+    }
+
+    @Transactional
+    public void revokeToken(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) {
+            return;
+        }
+
+        tokenRepository.findByTokenHashForUpdate(hashToken(rawToken))
+                .filter(token -> token.getTokenState() == States.VALID)
+                .ifPresent(token -> {
+                    token.setTokenState(States.REVOKED);
+                    tokenRepository.save(token);
+                });
+    }
+
+    private ResponseStatusException invalidRefreshToken() {
+        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
     }
 }

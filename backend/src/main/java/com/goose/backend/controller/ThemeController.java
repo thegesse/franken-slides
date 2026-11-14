@@ -3,6 +3,7 @@ package com.goose.backend.controller;
 import com.goose.backend.dto.ThemeResponse;
 import com.goose.backend.dto.request.theme.CreateThemeRequest;
 import com.goose.backend.dto.request.theme.UpdateThemeRequest;
+import com.goose.backend.security.AuthenticatedUser;
 import com.goose.backend.service.ThemeService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -24,26 +25,31 @@ import java.net.URI;
 @RequestMapping("/api/v1/users/{userId}/themes")
 public class ThemeController {
     private final ThemeService themeService;
+    private final AuthenticatedUser authenticatedUser;
 
-    public ThemeController(ThemeService themeService) {
+    public ThemeController(ThemeService themeService, AuthenticatedUser authenticatedUser) {
         this.themeService = themeService;
+        this.authenticatedUser = authenticatedUser;
     }
 
     @GetMapping
     public ResponseEntity<Page<ThemeResponse>> getThemesForUser(@PathVariable("userId") Long userId, Pageable pageable) {
-        Page<ThemeResponse> response = themeService.findAllThemesForUser(userId, pageable);
+        Long ownerId = authenticatedUser.requirePathUserId(userId);
+        Page<ThemeResponse> response = themeService.findAllThemesForUser(ownerId, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{themeId}")
     public ResponseEntity<ThemeResponse> getThemeById(@PathVariable("userId") Long userId, @PathVariable("themeId") Long themeId) {
-        ThemeResponse response = themeService.findThemeByIdForUser(userId, themeId);
+        Long ownerId = authenticatedUser.requirePathUserId(userId);
+        ThemeResponse response = themeService.findThemeByIdForUser(ownerId, themeId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<ThemeResponse> createTheme(@PathVariable("userId") Long userId, @Valid @RequestBody CreateThemeRequest request) {
-        ThemeResponse response = themeService.createThemeForUser(userId, request.title());
+        Long ownerId = authenticatedUser.requirePathUserId(userId);
+        ThemeResponse response = themeService.createThemeForUser(ownerId, request.title());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{themeId}")
                 .buildAndExpand(response.id())
@@ -53,13 +59,15 @@ public class ThemeController {
 
     @PatchMapping("/{themeId}")
     public ResponseEntity<ThemeResponse> changeThemeName(@PathVariable("userId") Long userId, @PathVariable("themeId") Long themeId, @Valid @RequestBody UpdateThemeRequest request) {
-        ThemeResponse response = themeService.updateThemeForUser(userId, themeId, request.newTitle());
+        Long ownerId = authenticatedUser.requirePathUserId(userId);
+        ThemeResponse response = themeService.updateThemeForUser(ownerId, themeId, request.newTitle());
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{themeId}")
     public ResponseEntity<Void> deleteTheme(@PathVariable("userId") Long userId, @PathVariable("themeId") Long themeId) {
-        themeService.deleteThemeForUser(userId, themeId);
+        Long ownerId = authenticatedUser.requirePathUserId(userId);
+        themeService.deleteThemeForUser(ownerId, themeId);
         return ResponseEntity.noContent().build();
     }
 }
