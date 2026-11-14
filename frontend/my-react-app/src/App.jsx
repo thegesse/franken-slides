@@ -12,14 +12,14 @@ function RequireUser({ children }) {
 
 function HomeRoute() {
     const userId = localStorage.getItem('user_id');
-    return <Navigate to={userId ? '/dashboard' : '/'} replace />;
+    return userId ? <Navigate to="/dashboard" replace /> : <Login />;
 }
 
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Login />} />
+                <Route path="/" element={<HomeRoute />} />
                 <Route path="/signup" element={<Register />} />
                 <Route
                     path="/dashboard"
