@@ -15,10 +15,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public AuthResponse login(String username, String password) {
@@ -26,12 +28,15 @@ public class AuthService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
         }
-
+        String accessToken = jwtService.createAccessToken(user);
         return new AuthResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                accessToken,
+                "Bearer",
+                jwtService.getAccessTokenLifetime().toSeconds()
         );
     }
 
@@ -46,8 +51,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(Roles.USER);
         User savedUser = userRepository.save(user);
-
-        return new AuthResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getRole());
+        String accessToken = jwtService.createAccessToken(savedUser);
+        return new AuthResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getRole(), accessToken, "Bearer", jwtService.getAccessTokenLifetime().toSeconds());
     }
 
 }

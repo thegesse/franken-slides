@@ -26,6 +26,7 @@ public class RefreshToken {
     @Column(nullable = false)
     private Instant expiresAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private States tokenState;
 

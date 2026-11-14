@@ -8,6 +8,9 @@ public record AuthResponse(
         Long id,
         String username,
         String email,
-        Roles role
+        Roles role,
+        String accessToken,
+        String tokenType,
+        long expiresIn
 ) {
 }
