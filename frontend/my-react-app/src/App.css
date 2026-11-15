@@ -92,6 +92,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .slide-create-form { display: grid; gap: 8px; margin-bottom: 17px; padding: 15px; border: 1px solid #e8ede7; border-radius: 12px; background: #fafbf9; }
 .form-heading h3 { margin: 2px 0 6px; font-size: 16px; }
 .slide-create-form textarea { resize: vertical; font-family: ui-monospace, monospace; font-size: 12px; }
+.selected-image-name { margin: 0; overflow-wrap: anywhere; }
 .slide-create-form .button { justify-self: start; margin-top: 3px; }
 .slide-list { display: grid; gap: 9px; }
 .slide-card { padding: 12px; border: 1px solid var(--line); border-radius: 11px; }

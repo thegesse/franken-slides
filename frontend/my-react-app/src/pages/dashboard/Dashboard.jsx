@@ -137,7 +137,7 @@ export default function Dashboard() {
         }
     }
 
-    async function createSlide(slideInput) {
+    async function createSlide({ imageFile, imageAlt, ...slideInput }) {
         setError('');
         const response = await apiFetch(
             `${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups/${selectedGroupId}/slides`,
@@ -150,6 +150,14 @@ export default function Dashboard() {
         if (!response.ok) throw new Error(`Could not create slide (${response.status})`);
         const createdSlide = await response.json();
         setSlides((current) => [...current, createdSlide]);
+
+        if (imageFile) {
+            try {
+                await uploadSlideImage(createdSlide.id, imageFile, imageAlt || createdSlide.title);
+            } catch (requestError) {
+                setError(`Slide created, but its image could not be uploaded: ${requestError.message}`);
+            }
+        }
     }
 
     async function uploadSlideImage(slideId, file, alt) {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const initialContent = '{\n  "text": ""\n}';
 
@@ -6,6 +6,9 @@ export default function CreateSlideForm({ onCreate }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [content, setContent] = useState(initialContent);
+    const [imageFile, setImageFile] = useState(null);
+    const [imageAlt, setImageAlt] = useState('');
+    const imageInputRef = useRef(null);
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -22,10 +25,13 @@ export default function CreateSlideForm({ onCreate }) {
 
         setSaving(true);
         try {
-            await onCreate({ title, description, content: parsedContent });
+            await onCreate({ title, description, content: parsedContent, imageFile, imageAlt });
             setTitle('');
             setDescription('');
             setContent(initialContent);
+            setImageFile(null);
+            setImageAlt('');
+            if (imageInputRef.current) imageInputRef.current.value = '';
         } catch (requestError) {
             setError(requestError.message);
         } finally {
@@ -48,6 +54,27 @@ export default function CreateSlideForm({ onCreate }) {
             <input id="slide-description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={255} />
             <label htmlFor="slide-content">Structured content (JSON)</label>
             <textarea id="slide-content" value={content} onChange={(event) => setContent(event.target.value)} rows={5} required spellCheck="false" />
+            <label htmlFor="slide-image">Image <span className="muted">(optional)</span></label>
+            <input
+                id="slide-image"
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
+            />
+            {imageFile && (
+                <>
+                    <p className="muted selected-image-name">Selected: {imageFile.name}</p>
+                    <label htmlFor="slide-image-alt">Image description <span className="muted">(optional)</span></label>
+                    <input
+                        id="slide-image-alt"
+                        value={imageAlt}
+                        onChange={(event) => setImageAlt(event.target.value)}
+                        maxLength={255}
+                        placeholder={title || 'Describe the image'}
+                    />
+                </>
+            )}
             <button className="button button-primary" type="submit" disabled={saving}>
                 {saving ? 'Adding…' : 'Add slide'}
             </button>
