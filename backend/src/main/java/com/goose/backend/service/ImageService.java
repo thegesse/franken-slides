@@ -3,9 +3,11 @@ package com.goose.backend.service;
 import com.goose.backend.dto.ImageResponse;
 import com.goose.backend.model.Image;
 import com.goose.backend.repository.ImageRepository;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,6 +30,13 @@ public class ImageService {
             "image/png", ".png",
             "image/webp", ".webp"
     );
+
+    private static final Map<String, MediaType> MEDIA_TYPES = Map.of(
+            ".jpg", MediaType.IMAGE_JPEG,
+            ".png", MediaType.IMAGE_PNG,
+            ".webp", MediaType.parseMediaType("image/webp")
+    );
+
     public ImageService(ImageRepository imageRepository, @Value("${app.upload-dir:../uploads}") String uploadDir) {
         this.imageRepository = imageRepository;
         this.uploadDir = Path.of(uploadDir).toAbsolutePath().normalize();
@@ -37,7 +47,8 @@ public class ImageService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image file is required");
         }
 
-        String extension = IMAGE_TYPES.get(file.getContentType());
+        String contentType = file.getContentType();
+        String extension = contentType == null ? null : IMAGE_TYPES.get(contentType);
         if(extension == null) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Use a JPEG, PNG or WebP image");
         }
@@ -69,15 +80,39 @@ public class ImageService {
             throw e;
         }
     }
-    public ImageResponse loadImage(Image image, String imagePath) {
-        if (image == null || imagePath == null || imagePath.isBlank()) {
+    public StoredImage loadImage(Image image) {
+        if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found");
         }
 
-        Path filePath = uploadDir.resolve(imagePath).normalize();
-        if(!Files.exists(filePath) || !Files.isReadable(filePath)) {
+        Path filePath = uploadDir.resolve(image.getImagePath()).normalize();
+        if (!filePath.startsWith(uploadDir) || !Files.isRegularFile(filePath) || !Files.isReadable(filePath)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image file not found");
         }
-        return new ImageResponse(image.getId(), image.getAlt(), image.getImagePath());
+
+        String fileName = filePath.getFileName().toString().toLowerCase(Locale.ROOT);
+        MediaType contentType = MEDIA_TYPES.entrySet().stream()
+                .filter(entry -> fileName.endsWith(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(MediaType.APPLICATION_OCTET_STREAM);
+        Resource resource = new FileSystemResource(filePath);
+        return new StoredImage(resource, contentType);
+    }
+
+    public void deleteImageFile(Image image) {
+        if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
+            return;
+        }
+
+        Path filePath = uploadDir.resolve(image.getImagePath()).normalize();
+        if (!filePath.startsWith(uploadDir)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid image storage path");
+        }
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException exception) {
+            throw new UncheckedIOException("Could not delete image file", exception);
+        }
     }
 }

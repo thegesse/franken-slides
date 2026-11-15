@@ -5,6 +5,7 @@ import com.goose.backend.dto.SlideResponse;
 import com.goose.backend.mapper.SlideContentJsonConverter;
 import com.goose.backend.model.Slide;
 import com.goose.backend.model.SlideGroup;
+import com.goose.backend.model.Image;
 import com.goose.backend.repository.ImageRepository;
 import com.goose.backend.repository.SlideGroupRepository;
 import com.goose.backend.repository.SlideRepository;
@@ -65,26 +66,41 @@ public class SlideService {
         return slide;
     }
 
+    @Transactional
     public ImageResponse addImageToSlide(Long ownerId, Long themeId, Long groupId, Long slideId, String alt, MultipartFile file) {
         Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
         ImageResponse image = imageService.addImage(alt, file);
+        Image imageEntity = imageRepository.findById(image.id())
+                .orElseThrow(() -> new EntityNotFoundException("Saved image not found"));
+        Image oldImage = slide.getImage();
+        slide.setImage(imageEntity);
+        slideRepository.save(slide);
+        if (oldImage != null) {
+            imageService.deleteImageFile(oldImage);
+        }
         return new ImageResponse(image.id(), image.alt(), image.imagePath());
     }
 
+    @Transactional
     public SlideResponse removeImageFromSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
         Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        Image oldImage = slide.getImage();
+        if (oldImage == null) {
+            return toDto(slide);
+        }
         slide.setImage(null);
         Slide savedSlide = slideRepository.save(slide);
-
+        imageService.deleteImageFile(oldImage);
         return toDto(savedSlide);
     }
 
-    public ImageResponse getImageForSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
+    @Transactional(readOnly = true)
+    public StoredImage getImageForSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
         Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
-        if(slide.getImage() == null) {
-            throw new EntityNotFoundException("No images found for this slide");
+        if (slide.getImage() == null) {
+            throw new EntityNotFoundException("No image found for this slide");
         }
-        return imageService.loadImage(slide.getImage(), slide.getImage().getImagePath());
+        return imageService.loadImage(slide.getImage());
     }
     @Transactional
     public SlideResponse createSlide(Long ownerId, Long themeId, Long groupId,
