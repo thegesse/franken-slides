@@ -7,6 +7,7 @@ public record SlideResponse(
         String title,
         String description,
         JsonNode content,
-        Long groupId
+        Long groupId,
+        ImageResponse image
 ) {
 }

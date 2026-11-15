@@ -152,6 +152,25 @@ export default function Dashboard() {
         setSlides((current) => [...current, createdSlide]);
     }
 
+    async function uploadSlideImage(slideId, file, alt) {
+        const imageUrl = `${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups/${selectedGroupId}/slides/${slideId}/image`;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('alt', alt);
+
+        const response = await apiFetch(imageUrl, { method: 'PUT', body: formData });
+        if (!response.ok) throw new Error(`Could not upload image (${response.status})`);
+        const image = await response.json();
+        setSlides((current) => current.map((slide) => slide.id === slideId ? { ...slide, image } : slide));
+    }
+
+    async function removeSlideImage(slideId) {
+        const imageUrl = `${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups/${selectedGroupId}/slides/${slideId}/image`;
+        const response = await apiFetch(imageUrl, { method: 'DELETE' });
+        if (!response.ok) throw new Error(`Could not remove image (${response.status})`);
+        setSlides((current) => current.map((slide) => slide.id === slideId ? { ...slide, image: null } : slide));
+    }
+
     async function deleteSlide(slideId) {
         setError('');
         try {
@@ -207,7 +226,11 @@ export default function Dashboard() {
                 return getAllPages(url);
             }));
             const presentationSlides = presentationGroups.flatMap((group, index) =>
-                slidesByGroup[index].map((slide) => ({ ...slide, groupName: group.name }))
+                slidesByGroup[index].map((slide) => ({
+                    ...slide,
+                    groupName: group.name,
+                    imageUrl: `${API_BASE_URL}/api/v1/users/${userId}/themes/${group.themeId}/groups/${group.id}/slides/${slide.id}/image`
+                }))
             );
             if (presentationSlides.length === 0) {
                 setError('The selected groups do not contain any slides yet.');
@@ -319,7 +342,13 @@ export default function Dashboard() {
                                     </div>
                                     <CreateSlideForm onCreate={createSlide} />
                                     {loadingSlides ? <p className="muted">Loading slides…</p> : (
-                                        <SlideList slides={slides} onDelete={deleteSlide} />
+                                        <SlideList
+                                            slides={slides}
+                                            onDelete={deleteSlide}
+                                            imageBaseUrl={`${API_BASE_URL}/api/v1/users/${userId}/themes/${selectedThemeId}/groups/${selectedGroupId}/slides`}
+                                            onUploadImage={uploadSlideImage}
+                                            onRemoveImage={removeSlideImage}
+                                        />
                                     )}
                                 </section>
                             )}

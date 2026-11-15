@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import SlideContentView from '../components/SlideContentView.jsx';
+import SlideImage from '../components/SlideImage.jsx';
 
 export default function PresentationPage() {
     const { state } = useLocation();
@@ -45,7 +46,14 @@ export default function PresentationPage() {
                     <p className="presentation-kicker">{currentSlide.groupName}</p>
                     <h1>{currentSlide.title}</h1>
                     {currentSlide.description && <p className="presentation-description">{currentSlide.description}</p>}
-                    <div className="presentation-content"><SlideContentView content={currentSlide.content} /></div>
+                    <div className={`presentation-body ${currentSlide.image ? 'has-image' : ''}`}>
+                        <div className="presentation-content"><SlideContentView content={currentSlide.content} /></div>
+                        <SlideImage
+                            image={currentSlide.image}
+                            src={currentSlide.imageUrl}
+                            fallbackAlt={currentSlide.title}
+                        />
+                    </div>
                 </div>
             </section>
 

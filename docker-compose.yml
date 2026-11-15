@@ -30,6 +30,9 @@ services:
       JWT_REFRESH_TOKEN_LIFETIME: ${JWT_REFRESH_TOKEN_LIFETIME:-P30D}
       JWT_REFRESH_COOKIE_SECURE: ${JWT_REFRESH_COOKIE_SECURE:-false}
       PORT: 8080
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - ./uploads:/data/uploads
     ports:
       - "8080:8080"
     depends_on:

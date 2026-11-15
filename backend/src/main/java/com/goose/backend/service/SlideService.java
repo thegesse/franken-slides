@@ -42,7 +42,11 @@ public class SlideService {
                 slide.getTitle(),
                 slide.getDescription(),
                 contentJsonConverter.parse(slide.getContent()),
-                slide.getGroup().getId()
+                slide.getGroup().getId(),
+                slide.getImage() == null ? null : new ImageResponse(
+                        slide.getImage().getId(),
+                        slide.getImage().getAlt(),
+                        slide.getImage().getImagePath())
         );
     }
 
@@ -114,12 +118,14 @@ public class SlideService {
         return toDto(slideRepository.save(slide));
     }
 
+    @Transactional(readOnly = true)
     public Page<SlideResponse> getSlidesForGroup(Long ownerId, Long themeId, Long groupId, Pageable pageable) {
         getOwnedGroup(ownerId, themeId, groupId);
         return slideRepository.findByGroup_IdOrderByIdAsc(groupId, pageable)
                 .map(this::toDto);
     }
 
+    @Transactional(readOnly = true)
     public Page<SlideResponse> searchSlidesInGroup(Long ownerId, Long themeId, Long groupId,
                                                    String title, Pageable pageable) {
         getOwnedGroup(ownerId, themeId, groupId);
@@ -127,6 +133,7 @@ public class SlideService {
                 .map(this::toDto);
     }
 
+    @Transactional(readOnly = true)
     public SlideResponse getSlideById(Long ownerId, Long themeId, Long groupId, Long slideId) {
         return toDto(getOwnedSlide(ownerId, themeId, groupId, slideId));
     }
@@ -156,5 +163,6 @@ public class SlideService {
     public void deleteSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
         Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
         slideRepository.delete(slide);
+        imageService.deleteImageFile(slide.getImage());
     }
 }

@@ -1,6 +1,7 @@
 import SlideContentView from './SlideContentView.jsx';
+import SlideImage from './SlideImage.jsx';
 
-export default function SlideList({ slides, onDelete }) {
+export default function SlideList({ slides, onDelete, imageBaseUrl, onUploadImage, onRemoveImage }) {
     if (slides.length === 0) {
         return <p className="muted slide-empty">No slides in this group yet. Use the form above to add the first one.</p>;
     }
@@ -17,7 +18,17 @@ export default function SlideList({ slides, onDelete }) {
                         </div>
                         <button className="icon-button danger-text" type="button" aria-label={`Delete slide ${slide.title}`} onClick={() => onDelete(slide.id)}>×</button>
                     </div>
-                    <div className="slide-content-preview"><SlideContentView content={slide.content} /></div>
+                    <div className={`slide-card-body ${slide.image ? 'has-image' : ''}`}>
+                        <div className="slide-content-preview"><SlideContentView content={slide.content} /></div>
+                        <SlideImage
+                            image={slide.image}
+                            src={`${imageBaseUrl}/${slide.id}/image`}
+                            fallbackAlt={slide.title}
+                            editable
+                            onUpload={(file, alt) => onUploadImage(slide.id, file, alt)}
+                            onRemove={() => onRemoveImage(slide.id)}
+                        />
+                    </div>
                 </article>
             ))}
         </div>
