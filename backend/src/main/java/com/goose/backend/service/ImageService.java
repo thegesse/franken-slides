@@ -5,6 +5,7 @@ import com.goose.backend.model.Image;
 import com.goose.backend.repository.ImageRepository;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -67,5 +68,16 @@ public class ImageService {
             }
             throw e;
         }
+    }
+    public ImageResponse loadImage(Image image, String imagePath) {
+        if (image == null || imagePath == null || imagePath.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found");
+        }
+
+        Path filePath = uploadDir.resolve(imagePath).normalize();
+        if(!Files.exists(filePath) || !Files.isReadable(filePath)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image file not found");
+        }
+        return new ImageResponse(image.getId(), image.getAlt(), image.getImagePath());
     }
 }

@@ -29,8 +29,7 @@ public class Slide {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private SlideGroup group;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "image_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Image image;
 }

@@ -1,9 +1,11 @@
 package com.goose.backend.service;
 
+import com.goose.backend.dto.ImageResponse;
 import com.goose.backend.dto.SlideResponse;
 import com.goose.backend.mapper.SlideContentJsonConverter;
 import com.goose.backend.model.Slide;
 import com.goose.backend.model.SlideGroup;
+import com.goose.backend.repository.ImageRepository;
 import com.goose.backend.repository.SlideGroupRepository;
 import com.goose.backend.repository.SlideRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Objects;
@@ -20,12 +23,16 @@ public class SlideService {
     private final SlideRepository slideRepository;
     private final SlideGroupRepository slideGroupRepository;
     private final SlideContentJsonConverter contentJsonConverter;
+    private final ImageRepository imageRepository;
+    private final ImageService imageService;
 
     public SlideService(SlideRepository slideRepository, SlideGroupRepository slideGroupRepository,
-                        SlideContentJsonConverter contentJsonConverter) {
+                        SlideContentJsonConverter contentJsonConverter, ImageRepository imageRepository, ImageService imageService) {
         this.slideRepository = slideRepository;
         this.slideGroupRepository = slideGroupRepository;
         this.contentJsonConverter = contentJsonConverter;
+        this.imageRepository = imageRepository;
+        this.imageService = imageService;
     }
 
     private SlideResponse toDto(Slide slide) {
@@ -58,6 +65,27 @@ public class SlideService {
         return slide;
     }
 
+    public ImageResponse addImageToSlide(Long ownerId, Long themeId, Long groupId, Long slideId, String alt, MultipartFile file) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        ImageResponse image = imageService.addImage(alt, file);
+        return new ImageResponse(image.id(), image.alt(), image.imagePath());
+    }
+
+    public SlideResponse removeImageFromSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        slide.setImage(null);
+        Slide savedSlide = slideRepository.save(slide);
+
+        return toDto(savedSlide);
+    }
+
+    public ImageResponse getImageForSlide(Long ownerId, Long themeId, Long groupId, Long slideId) {
+        Slide slide = getOwnedSlide(ownerId, themeId, groupId, slideId);
+        if(slide.getImage() == null) {
+            throw new EntityNotFoundException("No images found for this slide");
+        }
+        return imageService.loadImage(slide.getImage(), slide.getImage().getImagePath());
+    }
     @Transactional
     public SlideResponse createSlide(Long ownerId, Long themeId, Long groupId,
                                      String title, String description, JsonNode content) {
