@@ -8,6 +8,7 @@
  
 1. **[Download the ZIP](https://github.com/thegesse/franken-slides/archive/refs/heads/master.zip)** and unzip it
 2. **Double-click the installer for your system:**
+
 | System  | Double-click          |
 | ------- | --------------------- |
 | Windows | `install.bat`         |
