@@ -1,4 +1,4 @@
-# 🧟 Franken Slides
+# Franken Slides
  
 > Download, double-click, done.
  
