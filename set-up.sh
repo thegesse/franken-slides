@@ -95,7 +95,8 @@ echo "Step 2: building the Spring Boot JAR"
     bash ./mvnw clean package -DskipTests
 )
 
-echo "Step 3: starting Docker Compose"
+echo "Step 3: recreating Docker Compose containers and network"
+docker compose --env-file "$ENV_FILE" --project-directory "$SCRIPT_DIR" -f "$COMPOSE_FILE" down --remove-orphans
 docker compose --env-file "$ENV_FILE" --project-directory "$SCRIPT_DIR" -f "$COMPOSE_FILE" up --build -d
 
 echo "Frankenslides is starting. Open the frontend on port 5173."
