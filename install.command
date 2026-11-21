@@ -34,6 +34,11 @@ docker run --rm \
   maven:3.9-eclipse-temurin-21 mvn -B -q clean package -DskipTests \
   || { pause "Backend build failed. Press any key to close..."; exit 1; }
  
+echo "Recreating existing containers and network..."
+docker compose --env-file .env down --remove-orphans \
+  || { pause "Could not stop the existing containers. Press any key to close..."; exit 1; }
+
+
 echo "Starting Franken Slides..."
 docker compose --env-file .env up -d --build --remove-orphans \
   || { pause "Start failed. Press any key to close..."; exit 1; }

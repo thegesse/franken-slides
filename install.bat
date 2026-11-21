@@ -27,7 +27,12 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
- 
+docker compose --env-file .env down --remove-orphans
+if errorlevel 1 (
+  echo Could not stop the existing FrankenSlides containers.
+  pause
+  exit /b 1
+)
 echo Starting Franken Slides...
 docker compose --env-file .env up -d --build --remove-orphans
 if errorlevel 1 (
